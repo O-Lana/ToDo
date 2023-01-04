@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, {useEffect, useRef, useState} from "react";
 
 import styles from './index.module.scss';
 
@@ -21,6 +21,13 @@ export const InputTask: React.FC<InputTaskProps> = ({
     const [checked, setChecked] = useState(false);
     const [isEditMode, setIsEditMode] = useState(false);
     const [value, setValue] = useState(title);
+    const editTitleInputRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        if (isEditMode) {
+            editTitleInputRef?.current?.focus();
+        }
+    }, [isEditMode]);
     
     return (
         <div className={styles.inputTask}>
@@ -33,15 +40,24 @@ export const InputTask: React.FC<InputTaskProps> = ({
                         setChecked(e.target.checked);
                         
                         if (e.target.checked) {
-                            onDone(id);
+                            setTimeout(() => {
+                                onDone(id);
+                            }, 300);
                         }
                     }}
                 />
                 {isEditMode ? (
                     <input
                         value={value}
+                        ref={editTitleInputRef}
                         onChange={(e) => {
                             setValue(e.target.value);
+                        }}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                                onEdited(id, value);
+                                setIsEditMode(false );
+                            }
                         }}
                         className={styles.inputTaskTitleEdit}
                     />
@@ -55,7 +71,7 @@ export const InputTask: React.FC<InputTaskProps> = ({
                 className={styles.inputTaskSave}
                 onClick={() => {
                     onEdited(id, value);
-                    setIsEditMode(false);
+                    setIsEditMode(false );
                 }}
                 />
             ) : (
